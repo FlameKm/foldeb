@@ -9,13 +9,28 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onLanguage:c",
+    "onLanguage:cpp"
+  ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
         "command": "foldeb.helloWorld",
         "title": "Hello World"
+      },
+      {
+        "command": "foldeb.foldErrorBlocks",
+        "title": "Fold Error Code Blocks"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "foldeb.foldErrorBlocks",
+        "key": "ctrl+shift+e",
+        "mac": "cmd+shift+e",
+        "when": "editorLangId == 'c' || editorLangId == 'cpp'"
       }
     ]
   },
