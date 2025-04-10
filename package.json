@@ -17,17 +17,13 @@
   "contributes": {
     "commands": [
       {
-        "command": "foldeb.helloWorld",
-        "title": "Hello World"
-      },
-      {
-        "command": "foldeb.foldErrorBlocks",
+        "command": "foldeb.foldErrorBranches",
         "title": "Fold Error Code Blocks"
       }
     ],
     "keybindings": [
       {
-        "command": "foldeb.foldErrorBlocks",
+        "command": "foldeb.foldErrorBranches",
         "key": "ctrl+shift+e",
         "mac": "cmd+shift+e",
         "when": "editorLangId == 'c' || editorLangId == 'cpp'"
