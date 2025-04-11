@@ -9,6 +9,11 @@
   "categories": [
     "Other"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/FlameKm/foldeb"
+  },
+  "publisher": "foldeb",
   "activationEvents": [
     "onLanguage:c",
     "onLanguage:cpp"

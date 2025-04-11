@@ -1,71 +1,36 @@
-# foldeb README
+# Foldeb - 错误处理代码块折叠扩展
 
-This is the README for your extension "foldeb". After writing up a brief description, we recommend including the following sections.
+Foldeb 是一个专门用于识别和折叠错误处理代码块的 VS Code 扩展。它能帮助开发者在阅读代码时更加专注于正常的业务逻辑，通过隐藏错误处理的代码块来提高代码可读性。
 
-## Features
+## 功能特性
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+- **错误分支自动识别**：自动识别代码中的错误处理块
+- **一键式折叠**：通过快捷键一键折叠所有错误处理代码块
 
-For example if there is an image subfolder under your extension project workspace:
+## 使用方法
 
-\!\[feature X\]\(images/feature-x.png\)
+### 错误处理块折叠
+1. 打开代码文件
+2. 使用快捷键 `Ctrl+Shift+E`（Mac上为 `Cmd+Shift+E`）或从命令面板执行 "Fold Error Code Blocks" 命令
+3. 所有符合条件的错误处理代码块将被自动折叠
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+## 扩展设置
 
-## Requirements
+* 暂无可配置选项，计划在未来版本中添加
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+## 已知问题
 
-## Extension Settings
+* 在某些复杂的代码结构中，错误处理块的识别可能不够准确
+* 精确折叠功能目前不保存折叠状态，重新打开编辑器后需要重新折叠
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+## 版本历史
 
-For example:
+### 0.0.1
 
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
+* 初始版本发布
+* 实现基本的错误处理块识别和折叠功能
+* 添加精确折叠功能
 
 ---
 
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+**享受更清晰的代码阅读体验！**
