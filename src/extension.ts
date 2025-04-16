@@ -4,6 +4,41 @@ import * as vscode from 'vscode';
 // 错误处理关键字列表
 const ERROR_KEYWORDS = ['return', 'goto', 'throw', 'break', 'continue'];
 
+// 错误处理模式的正则表达式表格
+const ERROR_PATTERNS: Record<string, RegExp[]> = {
+	'return': [
+		/return\s+(-1|false|null|NULL|nullptr|undefined|nil)/i,  // 返回错误值
+		/return\s+(error|err|failure)/i,                           // 返回错误对象
+		/return\s+[\w.]+\s*\.\s*(error|failure|err)/i              // 返回带错误属性的对象
+	],
+	'throw': [
+		/throw\s+new\s+[\w.]+/,                                    // throw new Error
+		/throw\s+[\w.]+/                                           // throw error
+	],
+	'break': [
+		/break\s*;/                                                // 简单的break语句
+	],
+	'continue': [
+		/continue\s*;/                                             // 简单的continue语句
+	],
+	'goto': [
+		/goto\s+[\w_]+/                                            // goto 语句
+	],
+	'log': [
+		// 匹配日志中包含错误信息的情况
+		/\b(?:printf|log_e|log|console\.log)\s*\(\s*"(.*(error|failed|failure|err|invalid).*)"\s*\)/i
+	]
+};
+
+// 条件判断模式的正则表达式表格
+const CONDITION_PATTERNS: RegExp[] = [
+	/if\s*\(\s*[\w.]+\s*==\s*(null|NULL|nullptr|nil|0)\s*\)/i,     // if (xxx == NULL)
+	/if\s*\(\s*[\w.]+\s*===\s*(null|NULL|undefined|nil|0)\s*\)/i,  // if (xxx === null)
+	/if\s*\(\s*[\w.]+\s*!=\s*[^=]\s*\)/i,                          // if (xxx != yyy)
+	/if\s*\(\s*[\w.]+\s*<=?\s*\d+\s*\)/i,                       // if (xxx <= 0)
+	/if\s*\(\s*[\w.]+(\.isEmpty\(\)|\.length\s*==\s*0)\s*\)/i      // if (xxx.isEmpty() or xxx.length == 0)
+];
+
 export function activate(context: vscode.ExtensionContext) {
 	console.log('Foldeb 扩展已启动');
 
@@ -54,7 +89,7 @@ function findErrorBranches(lines: string[], document: vscode.TextDocument): vsco
 
 	for (const block of codeBlocks) {
 		if (isErrorHandlingBlock(block, lines)) {
-			console.log(`找到错误处理块: ${block.start + 1} - ${block.end + 1}`);
+			console.debug(`找到错误处理块: ${block.start + 1} - ${block.end + 1}`);
 			foldingRanges.push(new vscode.FoldingRange(block.start - 1, block.end));
 		}
 	}
@@ -104,6 +139,15 @@ function getIndentLevel(line: string): number {
 }
 
 function isErrorHandlingBlock(block: CodeBlock, lines: string[]): boolean {
+	if (block.indentLevel <= 4) {
+		return false;
+	}
+
+	// 检查代码块前一行是否是条件判断
+	if (block.start > 0 && isConditionStatement(lines[block.start - 1].trim())) {
+		return true;
+	}
+
 	for (let i = block.start; i <= block.end; i++) {
 		const line = lines[i].trim();
 		if (line.startsWith('//') || line === '') {
@@ -113,15 +157,32 @@ function isErrorHandlingBlock(block: CodeBlock, lines: string[]): boolean {
 		if (indentLevel > block.indentLevel) {
 			continue;
 		}
+
+		// 检查每个错误关键字
 		for (const keyword of ERROR_KEYWORDS) {
 			if (line.startsWith(keyword)) {
-				if (line.includes('return -1') || line.includes('return false') || line.includes('return NULL')) {
-					return true;
+				// 使用正则表达式检查错误模式
+				if (ERROR_PATTERNS[keyword]) {
+					for (const pattern of ERROR_PATTERNS[keyword]) {
+						if (pattern.test(line)) {
+							return true;
+						}
+					}
 				}
 			}
 		}
 	}
 
+	return false;
+}
+
+// 判断一行代码是否是条件判断语句
+function isConditionStatement(line: string): boolean {
+	for (const pattern of CONDITION_PATTERNS) {
+		if (pattern.test(line)) {
+			return true;
+		}
+	}
 	return false;
 }
 
