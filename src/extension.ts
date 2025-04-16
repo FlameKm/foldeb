@@ -1,36 +1,29 @@
 import { log } from 'console';
 import * as vscode from 'vscode';
 
-// 错误处理关键字列表
 const ERROR_KEYWORDS = ['return', 'goto', 'throw', 'break', 'continue'];
 
-// 错误处理模式的正则表达式表格
 const ERROR_PATTERNS: Record<string, RegExp[]> = {
 	'return': [
-		/return\s+(-1|false|null|NULL|nullptr|undefined|nil)/i,  // 返回错误值
-		/return\s+(error|err|failure)/i,                           // 返回错误对象
-		/return\s+[\w.]+\s*\.\s*(error|failure|err)/i              // 返回带错误属性的对象
+		/return\s+(-1|false|null|NULL|nullptr|undefined|nil)/i,  // Return error values
+		/return\s+(error|err|failure)/i,                           // Return error objects
+		/return\s+[\w.]+\s*\.\s*(error|failure|err)/i              // Return objects with error properties
 	],
 	'throw': [
 		/throw\s+new\s+[\w.]+/,                                    // throw new Error
 		/throw\s+[\w.]+/                                           // throw error
 	],
 	'break': [
-		/break\s*;/                                                // 简单的break语句
+		/break\s*;/                                                // Simple break statement
 	],
 	'continue': [
-		/continue\s*;/                                             // 简单的continue语句
+		/continue\s*;/                                             // Simple continue statement
 	],
 	'goto': [
-		/goto\s+[\w_]+/                                            // goto 语句
-	],
-	'log': [
-		// 匹配日志中包含错误信息的情况
-		/\b(?:printf|log_e|log|console\.log)\s*\(\s*"(.*(error|failed|failure|err|invalid).*)"\s*\)/i
+		/goto\s+[\w_]+/                                            // goto statement
 	]
 };
 
-// 条件判断模式的正则表达式表格
 const CONDITION_PATTERNS: RegExp[] = [
 	/if\s*\(\s*[\w.]+\s*==\s*(null|NULL|nullptr|nil|0)\s*\)/i,     // if (xxx == NULL)
 	/if\s*\(\s*[\w.]+\s*===\s*(null|NULL|undefined|nil|0)\s*\)/i,  // if (xxx === null)
@@ -39,12 +32,16 @@ const CONDITION_PATTERNS: RegExp[] = [
 	/if\s*\(\s*[\w.]+(\.isEmpty\(\)|\.length\s*==\s*0)\s*\)/i      // if (xxx.isEmpty() or xxx.length == 0)
 ];
 
+const LOG_PATTERNS: RegExp[] = [
+	/\w*\(\s*"(.*(error|failed|failure|err|invalid).*)"/,
+]
+
 export function activate(context: vscode.ExtensionContext) {
-	console.log('Foldeb 扩展已启动');
+	console.log('Foldeb extension activated');
 
 	let foldCommand = vscode.commands.registerCommand('foldeb.foldErrorBranches', foldErrorBranches);
 
-	// 注册标准折叠范围提供器
+	// Register standard folding range provider
 	const foldingProvider = vscode.languages.registerFoldingRangeProvider(
 		['javascript', 'typescript', 'c', 'cpp', 'csharp', 'java', 'python'],
 		{
@@ -61,7 +58,7 @@ export function activate(context: vscode.ExtensionContext) {
 async function foldErrorBranches() {
 	const editor = vscode.window.activeTextEditor;
 	if (!editor) {
-		vscode.window.showInformationMessage('没有打开的编辑器');
+		vscode.window.showInformationMessage('No active editor');
 		return;
 	}
 
@@ -76,9 +73,9 @@ async function foldErrorBranches() {
 			selectionLines: foldingRanges.map(range => range.start),
 		});
 
-		vscode.window.showInformationMessage(`已折叠 ${foldingRanges.length} 个错误处理分支`);
+		vscode.window.showInformationMessage(`Folded ${foldingRanges.length} error handling branches`);
 	} else {
-		vscode.window.showInformationMessage('未找到错误处理分支');
+		vscode.window.showInformationMessage('No error handling branches found');
 	}
 }
 
@@ -89,7 +86,7 @@ function findErrorBranches(lines: string[], document: vscode.TextDocument): vsco
 
 	for (const block of codeBlocks) {
 		if (isErrorHandlingBlock(block, lines)) {
-			console.debug(`找到错误处理块: ${block.start + 1} - ${block.end + 1}`);
+			console.debug(`Found error handling block: ${block.start + 1} - ${block.end + 1}`);
 			foldingRanges.push(new vscode.FoldingRange(block.start - 1, block.end));
 		}
 	}
@@ -97,17 +94,16 @@ function findErrorBranches(lines: string[], document: vscode.TextDocument): vsco
 	return foldingRanges;
 }
 
-// 代码块结构
+// Code block structure
 interface CodeBlock {
-	start: number;    // 开始行号
-	end: number;      // 结束行号
-	indentLevel: number; // 缩进级别
+	start: number;    // Start line number
+	end: number;      // End line number
+	indentLevel: number; // Indentation level
 }
 
-// 分析代码块结构
 function analyzeCodeBlocks(lines: string[]): CodeBlock[] {
 	const blocks: CodeBlock[] = [];
-	const bracketStack: number[] = []; // 存储左括号的行号
+	const bracketStack: number[] = []; // Store line numbers of left brackets
 
 	let currentIndentLevel = 0;
 	for (let i = 0; i < lines.length; i++) {
@@ -120,11 +116,11 @@ function analyzeCodeBlocks(lines: string[]): CodeBlock[] {
 			bracketStack.push(i);
 			currentIndentLevel = indentLevel;
 		} else if (indentLevel < currentIndentLevel) {
-			// 结束当前代码块
+			// End the current code block
 			const start = bracketStack.pop();
 			if (start !== undefined) {
 				blocks.push({ start, end: i - 1, indentLevel: currentIndentLevel });
-				// console.log(`代码块: ${start + 1} - ${i} (缩进级别: ${currentIndentLevel})`);
+				console.debug(`Code block: ${start + 1} - ${i} (Indentation level: ${currentIndentLevel})`);
 			}
 			currentIndentLevel = indentLevel;
 		}
@@ -139,11 +135,13 @@ function getIndentLevel(line: string): number {
 }
 
 function isErrorHandlingBlock(block: CodeBlock, lines: string[]): boolean {
-	if (block.indentLevel <= 4) {
+	const keywordRegex = new RegExp(`\w*:$`);
+	const line = lines[block.start - 1].trim();
+	if (block.indentLevel <= 4 && !keywordRegex.test(line)) {
 		return false;
 	}
 
-	// 检查代码块前一行是否是条件判断
+	// Check if the line before the block is a condition statement
 	if (block.start > 0 && isConditionStatement(lines[block.start - 1].trim())) {
 		return true;
 	}
@@ -158,10 +156,9 @@ function isErrorHandlingBlock(block: CodeBlock, lines: string[]): boolean {
 			continue;
 		}
 
-		// 检查每个错误关键字
+		// Check each error keyword
 		for (const keyword of ERROR_KEYWORDS) {
 			if (line.startsWith(keyword)) {
-				// 使用正则表达式检查错误模式
 				if (ERROR_PATTERNS[keyword]) {
 					for (const pattern of ERROR_PATTERNS[keyword]) {
 						if (pattern.test(line)) {
@@ -171,12 +168,18 @@ function isErrorHandlingBlock(block: CodeBlock, lines: string[]): boolean {
 				}
 			}
 		}
+
+		// Check log patterns
+		for (const pattern of LOG_PATTERNS) {
+			if (pattern.test(line)) {
+				return true;
+			}
+		}
 	}
 
 	return false;
 }
 
-// 判断一行代码是否是条件判断语句
 function isConditionStatement(line: string): boolean {
 	for (const pattern of CONDITION_PATTERNS) {
 		if (pattern.test(line)) {
@@ -186,5 +189,4 @@ function isConditionStatement(line: string): boolean {
 	return false;
 }
 
-// 停用插件
 export function deactivate() { }
