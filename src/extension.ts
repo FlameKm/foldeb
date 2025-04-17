@@ -86,24 +86,25 @@ function findErrorBranches(lines: string[], document: vscode.TextDocument): vsco
 
 	for (const block of codeBlocks) {
 		if (isErrorHandlingBlock(block, lines)) {
-			console.debug(`Found error handling block: ${block.start + 1} - ${block.end + 1}`);
-			foldingRanges.push(new vscode.FoldingRange(block.start - 1, block.end));
+			console.debug(`Found error handling block: ${block.startLine + 1}:${block.startColumn + 1} - ${block.endLine + 1}:${block.endColumn + 1}`);
+			foldingRanges.push(new vscode.FoldingRange(block.startLine - 1, block.endLine));
 		}
 	}
 
 	return foldingRanges;
 }
 
-// Code block structure
 interface CodeBlock {
-	start: number;    // Start line number
-	end: number;      // End line number
+	startLine: number;   // Start line number
+	startColumn: number; // Start column number
+	endLine: number;     // End line number
+	endColumn: number;   // End column number
 	indentLevel: number; // Indentation level
 }
 
 function analyzeCodeBlocks(lines: string[]): CodeBlock[] {
 	const blocks: CodeBlock[] = [];
-	const bracketStack: number[] = []; // Store line numbers of left brackets
+	const bracketStack: { line: number; column: number }[] = []; // Store line and column of left brackets
 
 	let currentIndentLevel = 0;
 	for (let i = 0; i < lines.length; i++) {
@@ -113,18 +114,22 @@ function analyzeCodeBlocks(lines: string[]): CodeBlock[] {
 		}
 		const indentLevel = getIndentLevel(lines[i]);
 		if (indentLevel > currentIndentLevel) {
-			bracketStack.push(i);
+			bracketStack.push({ line: i, column: 0 });
 			currentIndentLevel = indentLevel;
 		} else if (indentLevel < currentIndentLevel) {
 			// End the current code block
 			const start = bracketStack.pop();
 			if (start !== undefined) {
-				blocks.push({ start, end: i - 1, indentLevel: currentIndentLevel });
-				console.debug(`Code block: ${start + 1} - ${i} (Indentation level: ${currentIndentLevel})`);
+				blocks.push({
+					startLine : start.line,
+					startColumn: start.column,
+					endLine: i - 1,
+					endColumn: lines[i - 1].length,
+					indentLevel: currentIndentLevel });
+				console.debug(`Code block: ${start.line + 1}:${start.column + 1} - ${i - 1 + 1}: ${lines[i - 1]} (Indentation level: ${currentIndentLevel})`);
 			}
 			currentIndentLevel = indentLevel;
 		}
-
 	}
 	return blocks;
 }
@@ -136,17 +141,17 @@ function getIndentLevel(line: string): number {
 
 function isErrorHandlingBlock(block: CodeBlock, lines: string[]): boolean {
 	const keywordRegex = new RegExp(`\w*:$`);
-	const line = lines[block.start - 1].trim();
+	const line = lines[block.startLine - 1].trim();
 	if (block.indentLevel <= 4 && !keywordRegex.test(line)) {
 		return false;
 	}
 
 	// Check if the line before the block is a condition statement
-	if (block.start > 0 && isConditionStatement(lines[block.start - 1].trim())) {
+	if (block.startLine > 0 && isConditionStatement(lines[block.startLine - 1].trim())) {
 		return true;
 	}
 
-	for (let i = block.start; i <= block.end; i++) {
+	for (let i = block.startLine; i <= block.endLine; i++) {
 		const line = lines[i].trim();
 		if (line.startsWith('//') || line === '') {
 			continue;
