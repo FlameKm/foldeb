@@ -63,13 +63,12 @@ async function foldErrorBranches() {
 	const foldingRanges = findErrorBranches(lines, document);
 
 	if (foldingRanges.length > 0) {
-		await vscode.commands.executeCommand('editor.fold', {
-			selectionLines: foldingRanges.map(range => range.start),
-		});
-
-		vscode.window.showInformationMessage(`Folded ${foldingRanges.length} error handling branches`);
+		const selection = foldingRanges.map(range => range.start);
+		await vscode.commands.executeCommand('editor.unfold', { selectionLines: selection });
+		await vscode.commands.executeCommand('editor.fold', { selectionLines: selection });
+		console.log(`Folded ${foldingRanges.length} error handling branches`);
 	} else {
-		vscode.window.showInformationMessage('No error handling branches found');
+		console.log('No error handling branches found');
 	}
 }
 
@@ -115,11 +114,12 @@ function analyzeCodeBlocks(lines: string[]): CodeBlock[] {
 			const start = bracketStack.pop();
 			if (start !== undefined) {
 				blocks.push({
-					startLine : start.line,
+					startLine: start.line,
 					startColumn: start.column,
 					endLine: i - 1,
 					endColumn: lines[i - 1].length,
-					indentLevel: currentIndentLevel });
+					indentLevel: currentIndentLevel
+				});
 				console.debug(`Code block: ${start.line + 1}:${start.column + 1} - ${i - 1 + 1}: ${lines[i - 1]} (Indentation level: ${currentIndentLevel})`);
 			}
 			currentIndentLevel = indentLevel;
