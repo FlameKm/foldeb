@@ -13,12 +13,6 @@ const ERROR_PATTERNS: Record<string, RegExp[]> = {
 		/throw\s+new\s+[\w.]+/,                                    // throw new Error
 		/throw\s+[\w.]+/                                           // throw error
 	],
-	'break': [
-		/break\s*;/                                                // Simple break statement
-	],
-	'continue': [
-		/continue\s*;/                                             // Simple continue statement
-	],
 	'goto': [
 		/goto\s+[\w_]+/                                            // goto statement
 	]
