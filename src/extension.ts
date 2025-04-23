@@ -19,11 +19,11 @@ const ERROR_PATTERNS: Record<string, RegExp[]> = {
 };
 
 const CONDITION_PATTERNS: RegExp[] = [
-	/if\s*\(\s*[\w.]+\s*==\s*(null|NULL|nullptr|nil|0)\s*\)/i,     // if (xxx == NULL)
-	/if\s*\(\s*[\w.]+\s*===\s*(null|NULL|undefined|nil|0)\s*\)/i,  // if (xxx === null)
-	/if\s*\(\s*[\w.]+\s*!=\s*[^=]\s*\)/i,                          // if (xxx != yyy)
-	/if\s*\(\s*[\w.]+\s*<=?\s*\d+\s*\)/i,                       // if (xxx <= 0)
-	/if\s*\(\s*[\w.]+(\.isEmpty\(\)|\.length\s*==\s*0)\s*\)/i      // if (xxx.isEmpty() or xxx.length == 0)
+	/if\s*\(\s*[\w.]+\s*==\s*(null|NULL|nullptr|nil)\s*\)/i,     // if (xxx == NULL)
+	/if\s*\(\s*[\w.]+\s*===\s*(null|NULL|undefined|nil)\s*\)/i,  // if (xxx === null)
+	/if\s*\(\s*[\w.]+\s*!=\s*[^=]\s*\)/i,                        // if (xxx != yyy)
+	/if\s*\(\s*[\w.]+\s*<=?\s*\d+\s*\)/i,                        // if (xxx <= 0)
+	/if\s*\(\s*[\w.]+(\.isEmpty\(\)|[\.]length\s*==\s*0|[\.]len\s*==\s*0)\s*\)/i      // if (xxx.isEmpty() or xxx.length == 0)
 ];
 
 const LOG_PATTERNS: RegExp[] = [
