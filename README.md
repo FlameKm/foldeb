@@ -1,36 +1,4 @@
-# Foldeb - 错误处理代码块折叠扩展
+# Foldeb - Error Handling Code Block Folding Extension
 
-Foldeb 是一个专门用于识别和折叠错误处理代码块的 VS Code 扩展。它能帮助开发者在阅读代码时更加专注于正常的业务逻辑，通过隐藏错误处理的代码块来提高代码可读性。
+Foldeb is a VS Code extension specifically designed to identify and fold error handling code blocks. It helps developers focus more on the main business logic when reading code by hiding error handling code blocks to improve code readability.
 
-## 功能特性
-
-- **错误分支自动识别**：自动识别代码中的错误处理块
-- **一键式折叠**：通过快捷键一键折叠所有错误处理代码块
-
-## 使用方法
-
-### 错误处理块折叠
-1. 打开代码文件
-2. 使用快捷键 `Ctrl+Shift+E`（Mac上为 `Cmd+Shift+E`）或从命令面板执行 "Fold Error Code Blocks" 命令
-3. 所有符合条件的错误处理代码块将被自动折叠
-
-## 扩展设置
-
-* 暂无可配置选项，计划在未来版本中添加
-
-## 已知问题
-
-* 在某些复杂的代码结构中，错误处理块的识别可能不够准确
-* 精确折叠功能目前不保存折叠状态，重新打开编辑器后需要重新折叠
-
-## 版本历史
-
-### 0.0.1
-
-* 初始版本发布
-* 实现基本的错误处理块识别和折叠功能
-* 添加精确折叠功能
-
----
-
-**享受更清晰的代码阅读体验！**
