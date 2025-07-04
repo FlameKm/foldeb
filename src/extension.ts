@@ -27,7 +27,8 @@ const CONDITION_PATTERNS: RegExp[] = [
 ];
 
 const LOG_PATTERNS: RegExp[] = [
-	/\w*\(\s*"(.*(error|failed|failure|err|invalid).*)"/,
+	/\w*\(\s*"(.*(error|failed|failure|err|invalid).*)".*\)/,
+	/log_e\(.*\)/,  // log_e
 ]
 
 export function activate(context: vscode.ExtensionContext) {
@@ -142,6 +143,7 @@ function isErrorHandlingBlock(block: CodeBlock, lines: string[]): boolean {
 
 	// Check if the line before the block is a condition statement
 	if (block.startLine > 0 && isConditionStatement(lines[block.startLine - 1].trim())) {
+		console.debug(`1`);
 		return true;
 	}
 
@@ -161,6 +163,7 @@ function isErrorHandlingBlock(block: CodeBlock, lines: string[]): boolean {
 				if (ERROR_PATTERNS[keyword]) {
 					for (const pattern of ERROR_PATTERNS[keyword]) {
 						if (pattern.test(line)) {
+							console.debug(`2`);
 							return true;
 						}
 					}
@@ -171,6 +174,7 @@ function isErrorHandlingBlock(block: CodeBlock, lines: string[]): boolean {
 		// Check log patterns
 		for (const pattern of LOG_PATTERNS) {
 			if (pattern.test(line)) {
+				console.debug(`3`);
 				return true;
 			}
 		}
